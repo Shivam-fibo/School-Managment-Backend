@@ -3,6 +3,7 @@ import cors from 'cors'
 import connectDB from './config/db.js'
 import dotenv from 'dotenv'
 import admissionRouter from "./router/admissionRouter.js"
+import feeRouter from "./router/feesRouter.js"
 dotenv.config()
 
 const app = express()
@@ -16,5 +17,6 @@ app.get('/', (req, res) =>{
 })
 
 app.use('/api/student', admissionRouter)
+app.use('/api/fee', feeRouter)
 
 export default app
