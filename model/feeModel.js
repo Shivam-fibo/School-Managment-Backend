@@ -3,8 +3,15 @@ import mongoose from "mongoose";
 const FeesSchema = new mongoose.Schema({
     group: {
         type: String,
-        required: true
+        required: true,
+        enum: [
+            "Nursery",
+            "LKG",
+            "UKG",
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"
+        ]
     },
+
     monthName: {
         type: String,
         required: true,
@@ -33,5 +40,6 @@ const FeesSchema = new mongoose.Schema({
         type: Number
     }
 });
+FeesSchema.index({ group: 1, monthName: 1 }, { unique: true });
 
 export default mongoose.model("FeeModel", FeesSchema);
