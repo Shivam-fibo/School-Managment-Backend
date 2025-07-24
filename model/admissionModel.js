@@ -61,6 +61,21 @@ group: {
   image: {
     type: String,
   },
+  payments: [
+    {
+      monthName: {
+        type: String,
+        enum: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+      },
+      paid: {
+        type: Boolean,
+        default: false
+      },
+      paidAt: {
+        type: Date
+      }
+    }
+  ]
 });
 
 export default mongoose.model("StudentAdmission", admissionSchema);
