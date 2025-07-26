@@ -17,6 +17,7 @@ export const AdmissionDetails = async (req, res) => {
     motherName,
     guardianPhone,
     admissionDate,
+    distance
   } = req.body;
 
   try {
@@ -65,6 +66,7 @@ export const AdmissionDetails = async (req, res) => {
         guardianPhone,
       },
       admissionDate,
+      distance,
       image: result.secure_url
     });
 

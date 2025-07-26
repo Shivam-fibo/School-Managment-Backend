@@ -189,3 +189,28 @@ export const getStudentFeeStatus = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+
+export const GroupExamMarks = async(req, res) =>{
+  try {
+    const {group} = req.body;
+    
+  } catch (error) {
+    
+  }
+}
+
+
+
+export const BalanceSheet = async(req, res) =>{
+  const {group, section} = req.body;
+  try {
+    const student = await admissionModel.find({group, section})
+
+    console.log(student)
+    res.status(200).json({student})
+  } catch (error) {
+    console.log(error)
+      res.status(500).json({ error: "Server error" });
+  } 
+}

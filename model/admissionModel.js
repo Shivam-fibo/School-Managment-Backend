@@ -61,6 +61,10 @@ group: {
   image: {
     type: String,
   },
+  distance: {
+    type: Number,
+    default: 0
+  },
   payments: [
     {
       monthName: {
@@ -75,7 +79,14 @@ group: {
         type: Date
       }
     }
-  ]
+  ],
+  marks: [
+  {
+    termName: String,
+    subjectName: String,
+    marksObtained: Number
+  }
+]
 });
 
 export default mongoose.model("StudentAdmission", admissionSchema);
