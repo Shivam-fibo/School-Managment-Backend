@@ -77,7 +77,7 @@ export const getStudentMonthlyFeeDetails = async (req, res) => {
   try {
     // ✅ Find student by studentId (not _id)
     const student = await admissionModel.findOne({ studentId });
-
+    console.log(student)
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
@@ -90,7 +90,8 @@ export const getStudentMonthlyFeeDetails = async (req, res) => {
         studentId: student.studentId,
         fullName: `${student.firstName} ${student.lastName || ""}`,
         group: student.group,
-        section: student.section
+        section: student.section,
+        distance: student.distance
       },
       fees: monthlyFees
     });
