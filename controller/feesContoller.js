@@ -2,70 +2,29 @@ import FeeModel from "../model/feeModel.js";
 import admissionModel from "../model/admissionModel.js";
 import feeModel from "../model/feeModel.js";
 export const MonthlyFees = async (req, res) => {
-  console.log(req.body)
   try {
-    const {
-      group,
-      monthName,
-      monthFees,
-      tuitionFees,
-      examinationFees,
-      sportFees,
-      annualFunctionFees,
-      extraFees,
-      admissionFees
-    } = req.body;
+    const { group, tuitionFees } = req.body;
 
-    const feeData = new FeeModel({
-      group,
-      monthName,
-      monthFees,
-      tuitionFees,
-      examinationFees,
-      sportFees,
-      annualFunctionFees,
-      extraFees,
-      admissionFees
-    });
-
-    await feeData.save();
-
-    return res.status(201).json({
-      success: true,
-      message: "Monthly fees data saved successfully.",
-      data: feeData
-    });
-  } catch (error) {
-    console.error("Error saving fees:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong while saving fees.",
-      error: error.message
-    });
-  }
-};
-
-export const getSubmittedMonths = async (req, res) => {
-  try {
-    console.log(req.query.group)
-    const group  = req.query.group;
-
-    if (!group) {
-      return res.status(400).json({ success: false, message: "Group is required" });
+    if (!group || !tuitionFees) {
+      return res.status(400).json({ message: "Group and tuitionFees are required" });
     }
 
-    const submitted = await FeeModel.find({ group }).select("monthName -_id");
-    const months = submitted.map(fee => fee.monthName);
+    const existing = await FeeModel.findOne({ group });
+    if (existing) {
+      existing.tuitionFees = tuitionFees;
+      await existing.save();
+      return res.status(200).json({ success: true, message: "Tuition fee updated", data: existing });
+    }
 
-    return res.status(200).json({ success: true, months });
+    const newFee = new FeeModel({ group, tuitionFees });
+    await newFee.save();
+    return res.status(201).json({ success: true, message: "Tuition fee set", data: newFee });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch submitted months",
-      error: error.message
-    });
+    console.error("Error:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
 
 export const getStudentMonthlyFeeDetails = async (req, res) => {
   const { studentId } = req.query;
@@ -191,15 +150,6 @@ export const getStudentFeeStatus = async (req, res) => {
   }
 };
 
-
-export const GroupExamMarks = async(req, res) =>{
-  try {
-    const {group} = req.body;
-    
-  } catch (error) {
-    
-  }
-}
 
 
 
