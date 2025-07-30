@@ -148,3 +148,108 @@ export const AllStudentList = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+
+
+export const deleteStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const student = await admissionModel.findById(id);
+    if (!student) return res.status(404).json({ message: "Student not found" });
+
+    await admissionModel.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Student deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error deleting student", error });
+  }
+};
+
+
+export const updateStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      firstName,
+      lastName,
+      middleName,
+      preferredName,
+      email,
+      dob,
+      gender,
+      group,
+      section,
+      phoneNumber,
+      nationality,
+      culturalAffiliationCountry,
+      firstLanguage,
+      siblings,
+      previouslyApplied,
+      admissionDate,
+      distance,
+
+      guardianDetails,
+      familyDetails,
+    } = req.body;
+
+    const updatedStudent = await admissionModel.findByIdAndUpdate(id, {
+      firstName,
+      lastName,
+      middleName,
+      preferredName,
+      email,
+      dob,
+      gender,
+      group,
+      section,
+      phoneNumber,
+      nationality,
+      culturalAffiliationCountry,
+      firstLanguage,
+      siblings,
+      previouslyApplied,
+      admissionDate,
+      distance,
+
+      guardianDetails: {
+        fatherName: guardianDetails?.fatherName,
+        motherName: guardianDetails?.motherName,
+        guardianPhone: guardianDetails?.guardianPhone,
+      },
+
+      familyDetails: {
+        motherFamilyName: familyDetails?.motherFamilyName,
+        motherFirstName: familyDetails?.motherFirstName,
+        motherNationality: familyDetails?.motherNationality,
+        motherFirstLanguage: familyDetails?.motherFirstLanguage,
+        fatherFamilyName: familyDetails?.fatherFamilyName,
+        fatherFirstName: familyDetails?.fatherFirstName,
+        fatherNationality: familyDetails?.fatherNationality,
+        fatherFirstLanguage: familyDetails?.fatherFirstLanguage,
+        homeAddress: familyDetails?.homeAddress,
+        contactDetails: {
+          homePhone: familyDetails?.contactDetails?.homePhone,
+          email: familyDetails?.contactDetails?.email,
+          motherMobile: familyDetails?.contactDetails?.motherMobile,
+          fatherMobile: familyDetails?.contactDetails?.fatherMobile,
+        }
+      }
+    }, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.status(200).json({
+      message: "Student updated successfully",
+      student: updatedStudent,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating student", error });
+  }
+};
