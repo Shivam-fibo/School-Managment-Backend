@@ -1,11 +1,15 @@
 import admissionModel from "../model/admissionModel.js";
 import cloudinary from "../config/cloudinary.js";
-import multer from 'multer'
-export const uploadProfileImage = multer().single("image")
+import multer from 'multer';
+
+export const uploadProfileImage = multer().single("image");
+
 export const AdmissionDetails = async (req, res) => {
   const {
     firstName,
     lastName,
+    middleName,
+    preferredName,
     email,
     dob,
     gender,
@@ -16,7 +20,27 @@ export const AdmissionDetails = async (req, res) => {
     motherName,
     guardianPhone,
     admissionDate,
-    distance
+    distance,
+    nationality,
+    culturalAffiliationCountry,
+    firstLanguage,
+    siblings,
+    previouslyApplied,
+
+    motherFamilyName,
+    motherFirstName,
+    motherNationality,
+    motherFirstLanguage,
+
+    fatherFamilyName,
+    fatherFirstName,
+    fatherNationality,
+    fatherFirstLanguage,
+
+    homeAddress,
+    homePhone,
+    motherMobile,
+    fatherMobile
   } = req.body;
 
   try {
@@ -31,16 +55,11 @@ export const AdmissionDetails = async (req, res) => {
       return res.status(400).json({ message: "Image is required" });
     }
 
-    // 1. Get the year from admissionDate or use current year
+    // Generate Student ID
     const year = new Date(admissionDate || Date.now()).getFullYear();
-
-    // 2. Use group as-is (LKG, UKG, Nursery, 1, 2, ...)
     const groupCode = group;
-
-    // 3. Build prefix
     const prefix = `SGM${year}${groupCode}`;
 
-    // 4. Find the last student with this prefix
     const lastStudent = await admissionModel
       .findOne({ studentId: { $regex: `^${prefix}` } })
       .sort({ studentId: -1 });
@@ -48,15 +67,14 @@ export const AdmissionDetails = async (req, res) => {
     let nextNumber = 1;
     if (lastStudent) {
       const lastId = lastStudent.studentId;
-      const lastNumStr = lastId.slice(prefix.length); // get last number
+      const lastNumStr = lastId.slice(prefix.length);
       const lastNum = parseInt(lastNumStr, 10);
       nextNumber = lastNum + 1;
     }
 
-    // 5. Final studentId
     const studentId = `${prefix}${String(nextNumber).padStart(2, '0')}`;
 
-    // 6. Upload image
+    // Upload Image
     const result = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream({ folder: "Student" }, (err, result) => {
         if (err) reject(err);
@@ -64,21 +82,46 @@ export const AdmissionDetails = async (req, res) => {
       }).end(req.file.buffer);
     });
 
-    // 7. Save new admission
+    // Save Admission
     const newAdmission = new admissionModel({
       studentId,
       firstName,
       lastName,
+      middleName,
+      preferredName,
       email,
       dob,
       gender,
       group,
       section,
       phoneNumber,
+      nationality,
+      culturalAffiliationCountry,
+      firstLanguage,
+      siblings: siblings ? JSON.parse(siblings) : [], 
+      previouslyApplied,
+
       guardianDetails: {
         fatherName,
         motherName,
         guardianPhone,
+      },
+      familyDetails: {
+        motherFamilyName,
+        motherFirstName,
+        motherNationality,
+        motherFirstLanguage,
+        fatherFamilyName,
+        fatherFirstName,
+        fatherNationality,
+        fatherFirstLanguage,
+        homeAddress,
+        contactDetails: {
+          homePhone,
+          email,
+          motherMobile,
+          fatherMobile
+        }
       },
       admissionDate,
       distance,
@@ -87,22 +130,21 @@ export const AdmissionDetails = async (req, res) => {
 
     await newAdmission.save();
 
-    res.status(201).json({ message: "Student admission saved successfully", data: newAdmission });
+    res.status(201).json({
+      message: "Student admission saved successfully",
+      data: newAdmission
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
-
-
-export const AllStudentList = async(req, res) =>{
+export const AllStudentList = async (req, res) => {
   try {
-    const student = await admissionModel.find()
-    return res.status(200).json({student})
+    const students = await admissionModel.find();
+    res.status(200).json({ students });
   } catch (error) {
-        res.status(500).json({ message: "Server error", error });
-
+    res.status(500).json({ message: "Server error", error });
   }
-  
-}
+};
