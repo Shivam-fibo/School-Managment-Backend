@@ -5,6 +5,7 @@ import multer from 'multer';
 export const uploadProfileImage = multer().single("image");
 
 export const AdmissionDetails = async (req, res) => {
+  console.log("api hit here")
   const {
     firstName,
     lastName,

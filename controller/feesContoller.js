@@ -1,29 +1,52 @@
 import FeeModel from "../model/feeModel.js";
 import admissionModel from "../model/admissionModel.js";
 import feeModel from "../model/feeModel.js";
+
 export const MonthlyFees = async (req, res) => {
   try {
-    const { group, tuitionFees } = req.body;
+    const {
+      group,
+      registrationFee,
+      admissionFee,
+      annualFee,
+      monthlyFee,
+      termFees 
+    } = req.body;
 
-    if (!group || !tuitionFees) {
-      return res.status(400).json({ message: "Group and tuitionFees are required" });
+    if (!group || !monthlyFee || !registrationFee || !admissionFee || !termFees) {
+      return res.status(400).json({ message: "All field are required" });
     }
 
     const existing = await FeeModel.findOne({ group });
+
     if (existing) {
-      existing.tuitionFees = tuitionFees;
+      existing.registrationFee = registrationFee || 0;
+      existing.admissionFee = admissionFee || 0;
+      existing.annualFee = annualFee || 0;
+      existing.monthlyFee = monthlyFee;
+      existing.termFees = termFees || [];
       await existing.save();
-      return res.status(200).json({ success: true, message: "Tuition fee updated", data: existing });
+
+      return res.status(200).json({ success: true, message: "Fee structure updated", data: existing });
     }
 
-    const newFee = new FeeModel({ group, tuitionFees });
+    const newFee = new FeeModel({
+      group,
+      registrationFee,
+      admissionFee,
+      annualFee,
+      monthlyFee,
+      termFees
+    });
+
     await newFee.save();
-    return res.status(201).json({ success: true, message: "Tuition fee set", data: newFee });
+    return res.status(201).json({ success: true, message: "Fee structure created", data: newFee });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error setting fee structure:", error);
     return res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
 
 
 export const getStudentMonthlyFeeDetails = async (req, res) => {
