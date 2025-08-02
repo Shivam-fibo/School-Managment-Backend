@@ -1,17 +1,22 @@
 import mongoose from "mongoose";
 
-const termFeeSchema = new mongoose.Schema({
-  termName: { type: String, required: true },
-  amount: { type: Number, required: true }
+const subjectSchema = new mongoose.Schema({
+  subjectName: { type: String, required: true },
+  maxMarks: { type: Number, default: 100 },
+  passMarks: { type: Number, default: 33 },
 });
 
-const feeSchema = new mongoose.Schema({
-  group: { type: String, required: true, unique: true },
-  registrationFee: { type: Number, default: 0 },
-  admissionFee: { type: Number, default: 0 },
-  annualFee: { type: Number, default: 0 },
-  monthlyFee: { type: Number, required: true },
-  termFees: [termFeeSchema] 
-}, { timestamps: true });
+const termSchema = new mongoose.Schema({
+  termName: { type: String, required: true },
+  subjects: [subjectSchema],
+});
 
-export default mongoose.model("Fee", feeSchema);
+const examSchema = new mongoose.Schema(
+  {
+    group: { type: String, required: true },
+    terms: [termSchema],
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model("Exam", examSchema);

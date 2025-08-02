@@ -1,8 +1,7 @@
 import FeeModel from "../model/feeModel.js";
 import admissionModel from "../model/admissionModel.js";
-import feeModel from "../model/feeModel.js";
 
-export const MonthlyFees = async (req, res) => {
+export const fullStructure = async (req, res) => {
   try {
     const {
       group,
@@ -10,9 +9,10 @@ export const MonthlyFees = async (req, res) => {
       admissionFee,
       annualFee,
       monthlyFee,
-      termFees 
+      termFees ,
+      tuitionFees
     } = req.body;
-
+console.log(req.body)
     if (!group || !monthlyFee || !registrationFee || !admissionFee || !termFees) {
       return res.status(400).json({ message: "All field are required" });
     }
@@ -25,6 +25,8 @@ export const MonthlyFees = async (req, res) => {
       existing.annualFee = annualFee || 0;
       existing.monthlyFee = monthlyFee;
       existing.termFees = termFees || [];
+      existing.tuitionFees = tuitionFees;
+
       await existing.save();
 
       return res.status(200).json({ success: true, message: "Fee structure updated", data: existing });
@@ -36,7 +38,8 @@ export const MonthlyFees = async (req, res) => {
       admissionFee,
       annualFee,
       monthlyFee,
-      termFees
+      termFees,
+      tuitionFees
     });
 
     await newFee.save();
@@ -57,7 +60,6 @@ export const getStudentMonthlyFeeDetails = async (req, res) => {
   }
 
   try {
-    // ✅ Find student by studentId (not _id)
     const student = await admissionModel.findOne({ studentId });
     console.log(student)
     if (!student) {
@@ -65,7 +67,7 @@ export const getStudentMonthlyFeeDetails = async (req, res) => {
     }
 
     // ✅ Get fees for the student's group
-    const monthlyFees = await feeModel.find({ group: student.group }).sort({ monthName: 1 });
+    const monthlyFees = await FeeModel.find({ group: student.group }).sort({ monthName: 1 });
 
     return res.status(200).json({
       student: {
@@ -188,3 +190,54 @@ export const BalanceSheet = async(req, res) =>{
       res.status(500).json({ error: "Server error" });
   } 
 }
+
+
+
+export const getStudentOneTimeFeeDetails = async (req, res) => {
+  const { studentId } = req.query;
+  console.log(studentId)
+
+  if (!studentId) {
+    return res.status(400).json({ error: "studentId is required in query params" });
+  }
+
+  try {
+    // ✅ Find the student using their studentId
+    const student = await admissionModel.findOne({ studentId });
+
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    // ✅ Fetch the fee structure for the student's group
+    const feeStructure = await FeeModel.findOne({ group: student.group });
+    console.log(feeStructure)
+    console.log(feeStructure)
+    if (!feeStructure) {
+      return res.status(404).json({ error: "Fee structure not found for this group" });
+    }
+
+    // ✅ Return only one-time fees
+    return res.status(200).json({
+      student: {
+        studentId: student.studentId,
+        fullName: `${student.firstName} ${student.lastName || ""}`,
+        group: student.group,
+        section: student.section
+      },
+      oneTimeFees: {
+        registrationFee: feeStructure.registrationFee || 0,
+        admissionFee: feeStructure.admissionFee || 0,
+        annualFee: feeStructure.annualFee || 0,
+        termFee: feeStructure.termFees
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching one-time fee details:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
